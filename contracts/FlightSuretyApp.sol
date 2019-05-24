@@ -1,6 +1,7 @@
 pragma solidity ^0.4.25;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./FlightSuretyData.sol";
 
 contract FlightSuretyApp {
     using SafeMath for uint256;
@@ -15,6 +16,7 @@ contract FlightSuretyApp {
 
     // Account used to deploy contract
     address private contractOwner;
+    FlightSuretyData dataContract;
 
     struct Flight {
         bool isRegistered;
@@ -33,7 +35,9 @@ contract FlightSuretyApp {
     modifier requireIsOperational()
     {
         // Modify to call data contract's status
-        require(true, "Contract is currently not operational");
+        require(
+            dataContract.isOperational(),
+            "Contract is currently not operational");
         _;
     }
 
@@ -75,12 +79,6 @@ contract FlightSuretyApp {
         returns (bool success, uint256 votes)
     {
         return (success, 0);
-    }
-
-    /** @dev Returns whether contract is operational. */
-    function isOperational() public pure returns (bool) {
-        // Modify to call data contract's status
-        return true;
     }
 
    /** @dev Called after oracle has updated flight status. */

@@ -12,34 +12,27 @@ contract FlightSuretyData {
         contractOwner = msg.sender;
     }
 
-    /** @dev Require contract to be operational. Used to pause a contract. */
-    modifier requireIsOperational()
-    {
-        // Modify to call data contract's status
-        require(true, "Contract is currently not operational");
-        _;
+    /** @dev Fallback function for funding smart contract. */
+    function() external payable {
+        fund();
     }
 
     /** @dev Require the owner account to be the function caller. */
-    modifier requireContractOwner()
-    {
+    modifier requireContractOwner() {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
     }
 
-    /** @dev Sets contract operations on/off. */
-    function setOperatingStatus(
-        bool mode
-    )
-        external
-        requireContractOwner
-    {
-        operational = mode;
+    /** @dev Require contract to be operational. Used to pause a contract. */
+    modifier requireIsOperational() {
+        // Modify to call data contract's status
+        require(operational, "Contract is currently not operational");
+        _;
     }
 
-    /** @dev Fallback function for funding smart contract. */
-    function() external payable {
-        fund();
+    /** @dev Sets contract operations on/off. */
+    function setOperatingStatus(bool mode) external requireContractOwner {
+        operational = mode;
     }
 
     /** @dev Buy insurance for a flight. */
