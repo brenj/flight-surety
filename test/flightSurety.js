@@ -4,14 +4,12 @@ const BigNumber = require('bignumber.js');
 contract('FlightSurety Tests', async (accounts) => {
 
   let config;
+  const firstAirline = accounts[1];
+
   before('setup contract', async () => {
     config = await Test.Config(accounts);
     // await config.flightSuretyData.authorizeCaller(config.flightSuretyApp.address);
   });
-
-  /****************************************************************************************/
-  /* Operations and Settings                                                              */
-  /****************************************************************************************/
 
   it(`Has correct initial isOperational() value`, async function () {
     let status = await config.flightSuretyData.isOperational.call();
@@ -31,34 +29,24 @@ contract('FlightSurety Tests', async (accounts) => {
   });
 
   it(`Has ability to block access to setOperatingStatus() for non-Owner`, async function () {
-
-      // Ensure that access is denied for non-Contract Owner account
       let accessDenied = false;
-      try 
-      {
-          await config.flightSuretyData.setOperatingStatus(false, { from: config.testAddresses[2] });
+      try {
+        await config.flightSuretyData.setOperatingStatus(
+          false, { from: config.testAddresses[2] });
+      } catch(e) {
+        accessDenied = true;
       }
-      catch(e) {
-          accessDenied = true;
-      }
-      assert.equal(accessDenied, true, "Access not restricted to Contract Owner");
-            
+      assert.equal(
+        accessDenied, true, "Access not restricted to Contract Owner");
   });
 
-  // it(`(multiparty) can allow access to setOperatingStatus() for Contract Owner account`, async function () {
-
-  //     // Ensure that access is allowed for Contract Owner account
-  //     let accessDenied = false;
-  //     try 
-  //     {
-  //         await config.flightSuretyData.setOperatingStatus(false);
-  //     }
-  //     catch(e) {
-  //         accessDenied = true;
-  //     }
-  //     assert.equal(accessDenied, false, "Access not restricted to Contract Owner");
-      
-  // });
+  it(`First airline is registered when contract is deployed`, async function () {
+    let wasRegistered = (
+      await config.flightSuretyData.hasAirlineBeenRegistered.call(
+        firstAirline));
+    assert.equal(
+      wasRegistered, true, "First airline not registered on deploy");
+  });
 
   // it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
 
