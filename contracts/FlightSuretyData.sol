@@ -7,6 +7,23 @@ contract FlightSuretyData {
 
     address private contractOwner;
     bool private operational = true;
+    address[] private registeredAirlines;
+
+    struct Airline {
+        address airlineID;
+        string airlineName;
+        bool isRegistered;
+    }
+
+    struct Flight {
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;
+        address airline;
+    }
+
+    mapping(address => Airline) private airlines;
+    mapping(bytes32 => Flight) private flights;
 
     constructor() public {
         contractOwner = msg.sender;
@@ -33,6 +50,47 @@ contract FlightSuretyData {
     /** @dev Sets contract operations on/off. */
     function setOperatingStatus(bool mode) external requireContractOwner {
         operational = mode;
+    }
+
+    /** @dev Add a new airline to storage. Still must be registered. */
+    function addAirline(
+        address airlineID,
+        string airlineName
+    )
+        external
+    {
+        airlines[airlineID] = Airline({
+            airlineID: airlineID,
+            airlineName: airlineName,
+            isRegistered: false
+
+        });
+    }
+
+    /** @dev Check if airline has been added. */
+    function hasAirline(address airlineID) external returns (bool) {
+        return airlines[airlineID].airlineID == airlineID;
+    }
+
+    /** @dev Register an airline. */
+    function registerAirline(address airlineID) external {
+        airlines[airlineID].isRegistered = true;
+        registeredAirlines.push(airlineID);
+    }
+
+    /** @dev Check if airline has been registered. */
+    function hasAirlineBeenRegistered(
+        address airlineID
+    )
+        external
+        returns (bool)
+    {
+        return airlines[airlineID].isRegistered;
+    }
+
+    /** @dev Get all registered airlines. */
+    function getRegisteredAirlines() external returns (address[] memory) {
+        return registeredAirlines;
     }
 
     /** @dev Buy insurance for a flight. */

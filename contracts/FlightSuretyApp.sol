@@ -18,17 +18,13 @@ contract FlightSuretyApp {
     address private contractOwner;
     FlightSuretyData dataContract;
 
-    struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-    }
-
-    mapping(bytes32 => Flight) private flights;
-
-    constructor () public {
+    constructor(address firstAirline, address _dataContract) public {
         contractOwner = msg.sender;
+        dataContract = FlightSuretyData(_dataContract);
+
+        // Add and register the first airline
+        dataContract.addAirline(firstAirline, "JetFirst Airlines");
+        dataContract.registerAirline(firstAirline);
     }
 
     /** @dev Require contract to be operational. Used to pause a contract. */
@@ -46,6 +42,32 @@ contract FlightSuretyApp {
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
+    }
+
+    /** @dev Add an airline to the registration queue. */
+    function registerAirline(address airline)
+        public
+        returns (bool success, uint256 votes)
+    {
+        require(
+            dataContract.hasAirline(airline),
+            "Requires airline has been added");
+
+        // address[] memory registeredAirlines = dataContract.getRegisteredAirlines();
+        // require(
+        //     registeredAirlines.length > 0,
+        //     "Requires at least one airline is registered");
+
+        // if (registeredAirlines.length >= 4) {
+        //     return (false, 0);
+        
+        // } else {
+        //     require(
+        //         msg.sender == registeredAirlines[0],
+        //         "Requires first airline to register first three airlines");
+        //     dataContract.registerAirline(airline);
+        //     return (true, 1);
+        // }
     }
 
     function fetchFlightStatus(
@@ -70,15 +92,6 @@ contract FlightSuretyApp {
 
     /** @dev Register a future flight for insuring. */
     function registerFlight() external pure {
-    }
-
-    /** @dev Add an airline to the registration queue. */
-    function registerAirline()
-        external
-        pure
-        returns (bool success, uint256 votes)
-    {
-        return (success, 0);
     }
 
    /** @dev Called after oracle has updated flight status. */
