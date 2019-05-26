@@ -18,6 +18,9 @@ contract FlightSuretyApp {
     address private contractOwner;
     FlightSuretyData dataContract;
 
+    event RegisteredAirline(address airlineID);
+    event Debug(address airline);
+
     constructor(address firstAirline, address _dataContract) public {
         contractOwner = msg.sender;
         dataContract = FlightSuretyData(_dataContract);
@@ -47,27 +50,29 @@ contract FlightSuretyApp {
     /** @dev Add an airline to the registration queue. */
     function registerAirline(address airline)
         public
-        returns (bool success, uint256 votes)
     {
         require(
-            dataContract.hasAirline(airline),
+            dataContract.hasAirlineBeenAdded(airline),
             "Requires airline has been added");
 
-        // address[] memory registeredAirlines = dataContract.getRegisteredAirlines();
-        // require(
-        //     registeredAirlines.length > 0,
-        //     "Requires at least one airline is registered");
+        address[] memory registeredAirlines = (
+            dataContract.getRegisteredAirlines());
 
-        // if (registeredAirlines.length >= 4) {
-        //     return (false, 0);
-        
-        // } else {
-        //     require(
-        //         msg.sender == registeredAirlines[0],
-        //         "Requires first airline to register first three airlines");
-        //     dataContract.registerAirline(airline);
-        //     return (true, 1);
-        // }
+        if (registeredAirlines.length < 5) {
+            require(
+                msg.sender == registeredAirlines[0],
+                "Requires first airline to register first 4 airlines");
+            dataContract.registerAirline(airline);
+            emit RegisteredAirline(airline);
+        } else {
+            // require(
+            //     dataContract.hasAirlineBeenRegistered(msg.sender),
+            //     "Requires registering airline is registered");
+            // require(
+            //     dataContract.hasAirlineVotedFor(msg.sender, airline),
+            //     "Requires registering airline hasn't already voted");
+            emit RegisteredAirline(address(0));
+        }
     }
 
     function fetchFlightStatus(

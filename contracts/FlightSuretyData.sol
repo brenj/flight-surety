@@ -23,7 +23,11 @@ contract FlightSuretyData {
     }
 
     mapping(address => Airline) private airlines;
+    mapping(bytes32 => bool) private airlineRegistrationVotes;
     mapping(bytes32 => Flight) private flights;
+
+    event AddedAirline(address airlineID);
+    event Debug(address test);
 
     constructor() public {
         contractOwner = msg.sender;
@@ -63,12 +67,13 @@ contract FlightSuretyData {
             airlineID: airlineID,
             airlineName: airlineName,
             isRegistered: false
-
         });
+
+        emit AddedAirline(airlineID);
     }
 
     /** @dev Check if airline has been added. */
-    function hasAirline(address airlineID) external returns (bool) {
+    function hasAirlineBeenAdded(address airlineID) external returns (bool) {
         return airlines[airlineID].airlineID == airlineID;
     }
 
@@ -88,9 +93,25 @@ contract FlightSuretyData {
         return airlines[airlineID].isRegistered;
     }
 
+    function hasAirlineVotedFor(
+        address airlineVoterID,
+        address airlineVoteeID
+    )
+        external
+        returns (bool)
+    {
+        return airlineRegistrationVotes[
+            sha256(airlineVoterID, airlineVoteeID)] == true;
+    }
+
     /** @dev Get all registered airlines. */
     function getRegisteredAirlines() external returns (address[] memory) {
         return registeredAirlines;
+    }
+
+    /** @dev Get the count of registered airlines. */
+    function getRegisteredAirlinesCount() external returns (uint256) {
+        return registeredAirlines.length;
     }
 
     /** @dev Buy insurance for a flight. */
