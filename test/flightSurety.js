@@ -48,6 +48,65 @@ contract('FlightSurety Tests', async (accounts) => {
       wasRegistered, true, "First airline not registered on deploy");
   });
 
+  it(`Only existing airline may register a new airline until there are at least four airlines registered`, async function () {
+    let airlineToRegister = accounts[2];
+    let errorThrown;
+
+    await config.flightSuretyData.addAirline(
+      airlineToRegister, "Test Airlines #1");
+
+    try {
+      await config.flightSuretyApp.registerAirline(airlineToRegister);
+    } catch (error) {
+      errorThrown = error;
+    }
+    assert.notEqual(
+      errorThrown, undefined,
+      'Revert error not thrown for registering without firstAirline');
+    assert.isAbove(
+      errorThrown.message.search(
+        'Requires first airline to register first 4 airlines'),
+        -1, 'Revert error not thrown for registering without firstAirline');
+
+    await config.flightSuretyApp.registerAirline(
+      airlineToRegister, {from: firstAirline});
+    let wasRegistered = (
+      await config.flightSuretyData.hasAirlineBeenRegistered.call(
+        airlineToRegister));
+    assert.equal(
+      wasRegistered, true, "Airline not registered");
+  });
+
+  it(`Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines`, async function () {
+    // NOTE: Commenting the following line causes the tests to pass
+    // This is the line causing problems yet it works fine in other tests?
+    await config.flightSuretyData.addAirline(
+      accounts[2], "Test Airlines #1");
+    // await config.flightSuretyApp.registerAirline(
+    //   accounts[2], {from: firstAirline});
+
+    // await config.flightSuretyData.addAirline(
+    //   accounts[3], "Test Airlines #2");
+    // await config.flightSuretyApp.registerAirline(
+    //   accounts[3], {from: firstAirline});
+
+    // await config.flightSuretyData.addAirline(
+    //   accounts[4], "Test Airlines #3");
+    // await config.flightSuretyApp.registerAirline(
+    //   accounts[4], {from: firstAirline});
+
+    // await config.flightSuretyData.addAirline(
+    //   accounts[5], "Test Airlines #4");
+    // await config.flightSuretyApp.registerAirline(
+    //   accounts[5], {from: firstAirline});
+
+    // unregisteredAirline = accounts[6];
+    // await config.flightSuretyData.addAirline(
+    //   accounts[6], "Test Airlines #5");
+    // await config.flightSuretyApp.registerAirline(
+    //   accounts[6], {from: unregisteredAirline});
+  });
+
   // it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
 
   //     await config.flightSuretyData.setOperatingStatus(false);
