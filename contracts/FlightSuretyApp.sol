@@ -80,6 +80,20 @@ contract FlightSuretyApp {
         }
     }
 
+    function submitAirlineRegistrationFund(
+    )
+        external
+        payable
+    {
+        require(
+            !dataContract.fundingHasBeenSubmitted(msg.sender),
+            "Requires funding wasn't already provided");
+        require(
+            msg.value == 10 wei, "Requires registration funds be 10 ether");
+        address(dataContract).transfer(msg.value);
+        dataContract.setFundingSubmitted(msg.sender);
+    }
+
     function fetchFlightStatus(
         address airline,
         string flight,

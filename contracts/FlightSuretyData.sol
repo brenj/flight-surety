@@ -13,6 +13,7 @@ contract FlightSuretyData {
         address airlineID;
         string airlineName;
         bool isRegistered;
+        bool fundingSubmitted;
         uint registrationVotes;
     }
 
@@ -68,6 +69,7 @@ contract FlightSuretyData {
             airlineID: airlineID,
             airlineName: airlineName,
             isRegistered: false,
+            fundingSubmitted: false,
             registrationVotes: 0
         });
 
@@ -120,6 +122,23 @@ contract FlightSuretyData {
         airlines[airlineVoteeID].registrationVotes += 1;
 
         return airlines[airlineVoteeID].registrationVotes;
+    }
+
+    function setFundingSubmitted(
+        address airlineID
+    )
+        external
+    {
+        airlines[airlineID].fundingSubmitted = true;
+    }
+
+    function fundingHasBeenSubmitted(
+        address airlineID
+    )
+        external
+        returns (bool)
+    {
+        return airlines[airlineID].fundingSubmitted == true;
     }
 
     /** @dev Get all registered airlines. */
