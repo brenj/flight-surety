@@ -43,15 +43,18 @@
   "dependencies": {},
   "babel": {
     "presets": [
-        ["@babel/preset-env", {
-        "targets": {
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
             "node": "current"
+          }
         }
-        }]
+      ]
     ],
     "plugins": [
-        "@babel/plugin-proposal-class-properties",
-        "@babel/plugin-proposal-object-rest-spread"
+      "@babel/plugin-proposal-class-properties",
+      "@babel/plugin-proposal-object-rest-spread"
     ]
   }
 }
