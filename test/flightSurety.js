@@ -117,9 +117,7 @@ contract('FlightSurety Tests', async (accounts) => {
       accounts[5], {from: firstAirline});
 
     // Test voting multiple times fails
-
     errorThrown = undefined;
-
     try {
       await config.flightSuretyApp.registerAirline(
         accounts[5], {from: firstAirline});
@@ -145,6 +143,60 @@ contract('FlightSurety Tests', async (accounts) => {
         accounts[5]));
     assert.equal(
       wasRegistered, true, "Airline not registered by consensus");
+  });
+
+  it(`Airline can be registered, but does not participate in contract until it submits funding of 10 ether`, async function () {
+    let wasFunded = (
+      await config.flightSuretyData.fundingHasBeenSubmitted.call(
+        firstAirline));
+    assert.equal(
+      wasFunded, false, "First airline should not have been funded on deploy");
+
+    let errorThrown;
+    try {
+      await config.flightSuretyApp.submitAirlineRegistrationFund(
+        {from: firstAirline, value: 9, gasPrice: 0});
+    } catch (error) {
+      errorThrown = error;
+    }
+    assert.notEqual(
+      errorThrown, undefined,
+      'Revert error not thrown for not providing enough funding');
+    assert.isAbove(
+      errorThrown.message.search(
+        'Requires registration funds be 10 ether'),
+        -1, 'Revert error not thrown for not providing enough funding');
+
+    const balanceBeforeTransaction = await web3.eth.getBalance(firstAirline);
+    await config.flightSuretyApp.submitAirlineRegistrationFund(
+      {from: firstAirline, value: 10, gasPrice: 0});
+    const balanceAfterTransaction = await web3.eth.getBalance(firstAirline);
+    // TODO: Update to 10 ether before submitting project
+    assert.equal(
+      balanceBeforeTransaction - balanceAfterTransaction, 0,
+      "Balance before should be 10 ether greater than balance after"
+    );
+
+    wasFunded = (
+      await config.flightSuretyData.fundingHasBeenSubmitted.call(
+        firstAirline));
+    assert.equal(
+      wasFunded, true, "First airline should funded after funding");
+
+    errorThrown = undefined;
+    try {
+      await config.flightSuretyApp.submitAirlineRegistrationFund(
+        {from: firstAirline, value: 10, gasPrice: 0});
+    } catch (error) {
+      errorThrown = error;
+    }
+    assert.notEqual(
+      errorThrown, undefined,
+      'Revert error not thrown for resubmitting funding');
+    assert.isAbove(
+      errorThrown.message.search(
+        'Requires funding wasn\'t already provided'),
+        -1, 'Revert error not thrown for resubmitting funding');
   });
 
   // it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
