@@ -78,33 +78,73 @@ contract('FlightSurety Tests', async (accounts) => {
   });
 
   it(`Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines`, async function () {
-    // NOTE: Commenting the following line causes the tests to pass
-    // This is the line causing problems yet it works fine in other tests?
     await config.flightSuretyData.addAirline(
       accounts[2], "Test Airlines #1");
-    // await config.flightSuretyApp.registerAirline(
-    //   accounts[2], {from: firstAirline});
+    await config.flightSuretyApp.registerAirline(
+      accounts[2], {from: firstAirline});
 
-    // await config.flightSuretyData.addAirline(
-    //   accounts[3], "Test Airlines #2");
-    // await config.flightSuretyApp.registerAirline(
-    //   accounts[3], {from: firstAirline});
+    await config.flightSuretyData.addAirline(
+      accounts[3], "Test Airlines #2");
+    await config.flightSuretyApp.registerAirline(
+      accounts[3], {from: firstAirline});
 
-    // await config.flightSuretyData.addAirline(
-    //   accounts[4], "Test Airlines #3");
-    // await config.flightSuretyApp.registerAirline(
-    //   accounts[4], {from: firstAirline});
+    await config.flightSuretyData.addAirline(
+      accounts[4], "Test Airlines #3");
+    await config.flightSuretyApp.registerAirline(
+      accounts[4], {from: firstAirline});
 
-    // await config.flightSuretyData.addAirline(
-    //   accounts[5], "Test Airlines #4");
-    // await config.flightSuretyApp.registerAirline(
-    //   accounts[5], {from: firstAirline});
+    unregisteredAirline = accounts[5];
+    await config.flightSuretyData.addAirline(
+      accounts[5], "Test Airlines #4");
 
-    // unregisteredAirline = accounts[6];
-    // await config.flightSuretyData.addAirline(
-    //   accounts[6], "Test Airlines #5");
-    // await config.flightSuretyApp.registerAirline(
-    //   accounts[6], {from: unregisteredAirline});
+    let errorThrown;
+
+    try {
+      await config.flightSuretyApp.registerAirline(
+        accounts[5], {from: unregisteredAirline});
+    } catch (error) {
+      errorThrown = error;
+    }
+    assert.notEqual(
+      errorThrown, undefined,
+      'Revert error not thrown for registering airline not registered');
+    assert.isAbove(
+      errorThrown.message.search(
+        'Requires registering airline is registered'),
+        -1, 'Revert error not thrown for registering airline not registered');
+
+    await config.flightSuretyApp.registerAirline(
+      accounts[5], {from: firstAirline});
+
+    // Test voting multiple times fails
+
+    errorThrown = undefined;
+
+    try {
+      await config.flightSuretyApp.registerAirline(
+        accounts[5], {from: firstAirline});
+    } catch (error) {
+      errorThrown = error;
+    }
+    assert.notEqual(
+      errorThrown, undefined,
+      'Revert error not thrown for registering airline hasn\'t already voted');
+    assert.isAbove(
+      errorThrown.message.search(
+        'Requires registering airline hasn\'t already voted'),
+        -1, 'Revert error not thrown for registering airline hasn\'t already voted');
+
+    await config.flightSuretyApp.registerAirline(
+      accounts[5], {from: accounts[2]});
+    await config.flightSuretyApp.registerAirline(
+      accounts[5], {from: accounts[3]});
+
+    // 3/5, 60% of the votes to register the airline have been cast
+    let wasRegistered = (
+      await config.flightSuretyData.hasAirlineBeenRegistered.call(
+        accounts[5]));
+    assert.equal(
+      wasRegistered, true, "Airline not registered by consensus");
   });
 
   // it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
