@@ -13,6 +13,7 @@ contract FlightSuretyData {
         address airlineID;
         string airlineName;
         bool isRegistered;
+        uint registrationVotes;
     }
 
     struct Flight {
@@ -66,7 +67,8 @@ contract FlightSuretyData {
         airlines[airlineID] = Airline({
             airlineID: airlineID,
             airlineName: airlineName,
-            isRegistered: false
+            isRegistered: false,
+            registrationVotes: 0
         });
 
         emit AddedAirline(airlineID);
@@ -100,8 +102,24 @@ contract FlightSuretyData {
         external
         returns (bool)
     {
-        return airlineRegistrationVotes[
-            sha256(airlineVoterID, airlineVoteeID)] == true;
+        bytes32 voteHash = keccak256(
+            abi.encodePacked(airlineVoterID, airlineVoteeID));
+        return airlineRegistrationVotes[voteHash] == true;
+    }
+
+    function voteForAirline(
+        address airlineVoterID,
+        address airlineVoteeID
+    )
+        external
+        returns (uint)
+    {
+        bytes32 voteHash = keccak256(
+            abi.encodePacked(airlineVoterID, airlineVoteeID));
+        airlineRegistrationVotes[voteHash] = true;
+        airlines[airlineVoteeID].registrationVotes += 1;
+
+        return airlines[airlineVoteeID].registrationVotes;
     }
 
     /** @dev Get all registered airlines. */

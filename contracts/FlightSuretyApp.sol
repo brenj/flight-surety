@@ -19,7 +19,7 @@ contract FlightSuretyApp {
     FlightSuretyData dataContract;
 
     event RegisteredAirline(address airlineID);
-    event Debug(address airline);
+    event Debug(uint airline);
 
     constructor(address firstAirline, address _dataContract) public {
         contractOwner = msg.sender;
@@ -65,13 +65,18 @@ contract FlightSuretyApp {
             dataContract.registerAirline(airline);
             emit RegisteredAirline(airline);
         } else {
-            // require(
-            //     dataContract.hasAirlineBeenRegistered(msg.sender),
-            //     "Requires registering airline is registered");
-            // require(
-            //     dataContract.hasAirlineVotedFor(msg.sender, airline),
-            //     "Requires registering airline hasn't already voted");
-            emit RegisteredAirline(address(0));
+            require(
+                dataContract.hasAirlineBeenRegistered(msg.sender),
+                "Requires registering airline is registered");
+            require(
+                !dataContract.hasAirlineVotedFor(msg.sender, airline),
+                "Requires registering airline hasn't already voted");
+
+            uint votes = dataContract.voteForAirline(msg.sender, airline);
+            if (SafeMath.div(SafeMath.mul(votes, 100), registeredAirlines.length) >= 50) {
+                dataContract.registerAirline(airline);
+                emit RegisteredAirline(airline);
+            }
         }
     }
 
