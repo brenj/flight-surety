@@ -46,17 +46,30 @@ contract('FlightSurety Tests', async (accounts) => {
         firstAirline));
     assert.equal(
       wasRegistered, true, "First airline not registered on deploy");
+
+    let wasFunded = (
+      await config.flightSuretyData.fundingHasBeenSubmitted.call(
+        firstAirline));
+    assert.equal(
+      wasFunded, false, "First airline should not have been funded on deploy");
   });
 
   it(`Only existing airline may register a new airline until there are at least four airlines registered`, async function () {
-    let airlineToRegister = accounts[2];
+    let airlineToRegister = accounts[3];
     let errorThrown;
 
+    // Add and fund airline
     await config.flightSuretyData.addAirline(
-      airlineToRegister, "Test Airlines #1");
+      accounts[2], "Test Airlines #1");
+    await config.flightSuretyApp.submitAirlineRegistrationFund(
+      {from: accounts[2], value: 10, gasPrice: 0});
+    // Attempt to add and register airline from Test Airlines #1
+    await config.flightSuretyData.addAirline(
+      airlineToRegister, "Test Airlines #2");
 
     try {
-      await config.flightSuretyApp.registerAirline(airlineToRegister);
+      await config.flightSuretyApp.registerAirline(
+        airlineToRegister, {from: accounts[2]});
     } catch (error) {
       errorThrown = error;
     }
@@ -68,6 +81,8 @@ contract('FlightSurety Tests', async (accounts) => {
         'Requires first airline to register first 4 airlines'),
         -1, 'Revert error not thrown for registering without firstAirline');
 
+    await config.flightSuretyApp.submitAirlineRegistrationFund(
+      {from: firstAirline, value: 10, gasPrice: 0});
     await config.flightSuretyApp.registerAirline(
       airlineToRegister, {from: firstAirline});
     let wasRegistered = (
@@ -97,8 +112,9 @@ contract('FlightSurety Tests', async (accounts) => {
     await config.flightSuretyData.addAirline(
       accounts[5], "Test Airlines #4");
 
+    await config.flightSuretyApp.submitAirlineRegistrationFund(
+      {from: unregisteredAirline, value: 10, gasPrice: 0});
     let errorThrown;
-
     try {
       await config.flightSuretyApp.registerAirline(
         accounts[5], {from: unregisteredAirline});
@@ -132,8 +148,12 @@ contract('FlightSurety Tests', async (accounts) => {
         'Requires registering airline hasn\'t already voted'),
         -1, 'Revert error not thrown for registering airline hasn\'t already voted');
 
+    await config.flightSuretyApp.submitAirlineRegistrationFund(
+      {from: accounts[2], value: 10, gasPrice: 0});
     await config.flightSuretyApp.registerAirline(
       accounts[5], {from: accounts[2]});
+    await config.flightSuretyApp.submitAirlineRegistrationFund(
+      {from: accounts[3], value: 10, gasPrice: 0});
     await config.flightSuretyApp.registerAirline(
       accounts[5], {from: accounts[3]});
 
@@ -146,16 +166,10 @@ contract('FlightSurety Tests', async (accounts) => {
   });
 
   it(`Airline can be registered, but does not participate in contract until it submits funding of 10 ether`, async function () {
-    let wasFunded = (
-      await config.flightSuretyData.fundingHasBeenSubmitted.call(
-        firstAirline));
-    assert.equal(
-      wasFunded, false, "First airline should not have been funded on deploy");
-
     let errorThrown;
     try {
       await config.flightSuretyApp.submitAirlineRegistrationFund(
-        {from: firstAirline, value: 9, gasPrice: 0});
+        {from: accounts[6], value: 9, gasPrice: 0});
     } catch (error) {
       errorThrown = error;
     }
@@ -169,7 +183,7 @@ contract('FlightSurety Tests', async (accounts) => {
 
     const balanceBeforeTransaction = await web3.eth.getBalance(firstAirline);
     await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: firstAirline, value: 10, gasPrice: 0});
+      {from: accounts[6], value: 10, gasPrice: 0});
     const balanceAfterTransaction = await web3.eth.getBalance(firstAirline);
     // TODO: Update to 10 ether before submitting project
     assert.equal(
@@ -179,14 +193,14 @@ contract('FlightSurety Tests', async (accounts) => {
 
     wasFunded = (
       await config.flightSuretyData.fundingHasBeenSubmitted.call(
-        firstAirline));
+        accounts[6]));
     assert.equal(
       wasFunded, true, "First airline should funded after funding");
 
     errorThrown = undefined;
     try {
       await config.flightSuretyApp.submitAirlineRegistrationFund(
-        {from: firstAirline, value: 10, gasPrice: 0});
+        {from: accounts[6], value: 10, gasPrice: 0});
     } catch (error) {
       errorThrown = error;
     }
@@ -199,43 +213,43 @@ contract('FlightSurety Tests', async (accounts) => {
         -1, 'Revert error not thrown for resubmitting funding');
   });
 
-  // it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
+  // // it(`(multiparty) can block access to functions using requireIsOperational when operating status is false`, async function () {
 
-  //     await config.flightSuretyData.setOperatingStatus(false);
+  // //     await config.flightSuretyData.setOperatingStatus(false);
 
-  //     let reverted = false;
-  //     try 
-  //     {
-  //         await config.flightSurety.setTestingMode(true);
-  //     }
-  //     catch(e) {
-  //         reverted = true;
-  //     }
-  //     assert.equal(reverted, true, "Access not blocked for requireIsOperational");      
+  // //     let reverted = false;
+  // //     try 
+  // //     {
+  // //         await config.flightSurety.setTestingMode(true);
+  // //     }
+  // //     catch(e) {
+  // //         reverted = true;
+  // //     }
+  // //     assert.equal(reverted, true, "Access not blocked for requireIsOperational");      
 
-  //     // Set it back for other tests to work
-  //     await config.flightSuretyData.setOperatingStatus(true);
+  // //     // Set it back for other tests to work
+  // //     await config.flightSuretyData.setOperatingStatus(true);
 
-  // });
+  // // });
 
-  // it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+  // // it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
-  //   // ARRANGE
-  //   let newAirline = accounts[2];
+  // //   // ARRANGE
+  // //   let newAirline = accounts[2];
 
-  //   // ACT
-  //   try {
-  //       await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
-  //   }
-  //   catch(e) {
+  // //   // ACT
+  // //   try {
+  // //       await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+  // //   }
+  // //   catch(e) {
 
-  //   }
-  //   let result = await config.flightSuretyData.isAirline.call(newAirline); 
+  // //   }
+  // //   let result = await config.flightSuretyData.isAirline.call(newAirline); 
 
-  //   // ASSERT
-  //   assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+  // //   // ASSERT
+  // //   assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
 
-  // });
+  // // });
  
 
 });
