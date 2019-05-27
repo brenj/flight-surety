@@ -4,12 +4,11 @@ const BigNumber = require('bignumber.js');
 contract('FlightSurety Tests', async (accounts) => {
 
   let config;
-  const firstAirline = accounts[1];
+  let firstAirline;
 
   before('setup contract', async () => {
     config = await Test.Config(accounts);
-    await config.flightSuretyData.authorizeCaller(
-      config.flightSuretyApp.address);
+    firstAirline = config.firstAirline;
   });
 
   it(`Has correct initial isOperational() value`, async function () {
