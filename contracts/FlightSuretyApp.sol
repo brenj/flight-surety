@@ -21,13 +21,9 @@ contract FlightSuretyApp {
     event RegisteredAirline(address airlineID);
     event Debug(uint airline);
 
-    constructor(address firstAirline, address _dataContract) public {
+    constructor(address _dataContract) public {
         contractOwner = msg.sender;
         dataContract = FlightSuretyData(_dataContract);
-
-        // Add and register the first airline
-        dataContract.addAirline(firstAirline, "JetFirst Airlines");
-        dataContract.registerAirline(firstAirline);
     }
 
     /** @dev Require contract to be operational. Used to pause a contract. */
@@ -47,7 +43,7 @@ contract FlightSuretyApp {
 
     modifier requireAirlineSubmittedFunding() {
         require(
-            dataContract.fundingHasBeenSubmitted(msg.sender),
+            dataContract.hasFundingBeenSubmitted(msg.sender),
             "Requires funding has been submitted by registering airline");
         _;
     }
@@ -68,7 +64,7 @@ contract FlightSuretyApp {
             require(
                 msg.sender == registeredAirlines[0],
                 "Requires first airline to register first 4 airlines");
-            dataContract.registerAirline(airline);
+            dataContract.addToRegisteredAirlines(airline);
             emit RegisteredAirline(airline);
         } else {
             require(
@@ -80,7 +76,7 @@ contract FlightSuretyApp {
 
             uint votes = dataContract.voteForAirline(msg.sender, airline);
             if (SafeMath.div(SafeMath.mul(votes, 100), registeredAirlines.length) >= 50) {
-                dataContract.registerAirline(airline);
+                dataContract.addToRegisteredAirlines(airline);
                 emit RegisteredAirline(airline);
             }
         }
@@ -92,7 +88,7 @@ contract FlightSuretyApp {
         payable
     {
         require(
-            !dataContract.fundingHasBeenSubmitted(msg.sender),
+            !dataContract.hasFundingBeenSubmitted(msg.sender),
             "Requires funding wasn't already provided");
         require(
             msg.value == 10 wei, "Requires registration funds be 10 ether");

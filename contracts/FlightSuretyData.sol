@@ -24,6 +24,7 @@ contract FlightSuretyData {
         address airline;
     }
 
+    mapping(address => bool) private authorizedCallers;
     mapping(address => Airline) private airlines;
     mapping(bytes32 => bool) private airlineRegistrationVotes;
     mapping(bytes32 => Flight) private flights;
@@ -33,6 +34,7 @@ contract FlightSuretyData {
 
     constructor() public {
         contractOwner = msg.sender;
+        authorizedCallers[msg.sender] = true;
     }
 
     /** @dev Fallback function for funding smart contract. */
@@ -42,20 +44,46 @@ contract FlightSuretyData {
 
     /** @dev Require the owner account to be the function caller. */
     modifier requireContractOwner() {
-        require(msg.sender == contractOwner, "Caller is not contract owner");
+        require(
+            msg.sender == contractOwner, "Requires caller is contract owner");
         _;
     }
 
     /** @dev Require contract to be operational. Used to pause a contract. */
     modifier requireIsOperational() {
-        // Modify to call data contract's status
-        require(operational, "Contract is currently not operational");
+        require(isOperational(), "Requires contract is operational");
         _;
+    }
+
+    modifier requireAuthorizedCaller() {
+        require(
+            authorizedCallers[msg.sender] == true,
+            "Requires caller is authorized to call this function");
+        _;
+    }
+
+    /** @dev Returns whether contract is operational. */
+    function isOperational(
+    )
+        public
+        view
+        requireAuthorizedCaller
+        returns (bool)
+    {
+        return operational;
     }
 
     /** @dev Sets contract operations on/off. */
     function setOperatingStatus(bool mode) external requireContractOwner {
         operational = mode;
+    }
+
+    function authorizeCaller(address caller) external requireContractOwner {
+        authorizedCallers[caller] = true;
+    }
+
+    function deauthorizeCaller(address caller) external requireContractOwner {
+        authorizedCallers[caller] = false;
     }
 
     /** @dev Add a new airline to storage. Still must be registered. */
@@ -64,6 +92,7 @@ contract FlightSuretyData {
         string airlineName
     )
         external
+        requireAuthorizedCaller
     {
         airlines[airlineID] = Airline({
             airlineID: airlineID,
@@ -77,12 +106,23 @@ contract FlightSuretyData {
     }
 
     /** @dev Check if airline has been added. */
-    function hasAirlineBeenAdded(address airlineID) external returns (bool) {
+    function hasAirlineBeenAdded(
+        address airlineID
+    )
+        external
+        requireAuthorizedCaller
+        returns (bool)
+    {
         return airlines[airlineID].airlineID == airlineID;
     }
 
-    /** @dev Register an airline. */
-    function registerAirline(address airlineID) external {
+    /** @dev Add an airline. */
+    function addToRegisteredAirlines(
+        address airlineID
+    )
+        external
+        requireAuthorizedCaller
+    {
         airlines[airlineID].isRegistered = true;
         registeredAirlines.push(airlineID);
     }
@@ -92,9 +132,20 @@ contract FlightSuretyData {
         address airlineID
     )
         external
+        requireAuthorizedCaller
         returns (bool)
     {
         return airlines[airlineID].isRegistered;
+    }
+
+    /** @dev Get all registered airlines. */
+    function getRegisteredAirlines(
+    )
+        external
+        requireAuthorizedCaller
+        returns (address[] memory)
+    {
+        return registeredAirlines;
     }
 
     function hasAirlineVotedFor(
@@ -102,6 +153,7 @@ contract FlightSuretyData {
         address airlineVoteeID
     )
         external
+        requireAuthorizedCaller
         returns (bool)
     {
         bytes32 voteHash = keccak256(
@@ -114,6 +166,7 @@ contract FlightSuretyData {
         address airlineVoteeID
     )
         external
+        requireAuthorizedCaller
         returns (uint)
     {
         bytes32 voteHash = keccak256(
@@ -128,27 +181,19 @@ contract FlightSuretyData {
         address airlineID
     )
         external
+        requireAuthorizedCaller
     {
         airlines[airlineID].fundingSubmitted = true;
     }
 
-    function fundingHasBeenSubmitted(
+    function hasFundingBeenSubmitted(
         address airlineID
     )
         external
+        requireAuthorizedCaller
         returns (bool)
     {
         return airlines[airlineID].fundingSubmitted == true;
-    }
-
-    /** @dev Get all registered airlines. */
-    function getRegisteredAirlines() external returns (address[] memory) {
-        return registeredAirlines;
-    }
-
-    /** @dev Get the count of registered airlines. */
-    function getRegisteredAirlinesCount() external returns (uint256) {
-        return registeredAirlines.length;
     }
 
     /** @dev Buy insurance for a flight. */
@@ -163,18 +208,8 @@ contract FlightSuretyData {
     function pay() external pure {
     }
 
-    /** @dev Add an airline to the registration queue. */
-    function registerAirline() external pure {
-    }
-
     /** @dev Initial funding for the insurance. */
     function fund() public payable {
-    }
-
-    /** @dev Returns whether contract is operational. */
-    function isOperational() public view returns (bool) {
-        // Modify to call data contract's status
-        return operational;
     }
 
     function getFlightKey(
@@ -182,8 +217,9 @@ contract FlightSuretyData {
         string memory flight,
         uint256 timestamp
     )
-        pure
         internal
+        view
+        requireAuthorizedCaller
         returns (bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
