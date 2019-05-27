@@ -93,6 +93,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
     {
         airlines[airlineID] = Airline({
             airlineID: airlineID,
@@ -111,6 +112,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
         returns (bool)
     {
         return airlines[airlineID].airlineID == airlineID;
@@ -122,6 +124,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
     {
         airlines[airlineID].isRegistered = true;
         registeredAirlines.push(airlineID);
@@ -133,6 +136,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
         returns (bool)
     {
         return airlines[airlineID].isRegistered;
@@ -143,6 +147,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
         returns (address[] memory)
     {
         return registeredAirlines;
@@ -154,6 +159,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
         returns (bool)
     {
         bytes32 voteHash = keccak256(
@@ -167,6 +173,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
         returns (uint)
     {
         bytes32 voteHash = keccak256(
@@ -182,6 +189,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
     {
         airlines[airlineID].fundingSubmitted = true;
     }
@@ -191,6 +199,7 @@ contract FlightSuretyData {
     )
         external
         requireAuthorizedCaller
+        requireIsOperational
         returns (bool)
     {
         return airlines[airlineID].fundingSubmitted == true;
@@ -220,6 +229,7 @@ contract FlightSuretyData {
         internal
         view
         requireAuthorizedCaller
+        requireIsOperational
         returns (bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));

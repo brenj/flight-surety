@@ -51,6 +51,7 @@ contract FlightSuretyApp {
     /** @dev Add an airline to the registration queue. */
     function registerAirline(address airline)
         public
+        requireIsOperational
         requireAirlineSubmittedFunding
     {
         require(
@@ -86,6 +87,7 @@ contract FlightSuretyApp {
     )
         external
         payable
+        requireIsOperational
     {
         require(
             !dataContract.hasFundingBeenSubmitted(msg.sender),
@@ -102,6 +104,7 @@ contract FlightSuretyApp {
         uint256 timestamp
     )
         external
+        requireIsOperational
     {
         uint8 index = getRandomIndex(msg.sender);
 
@@ -128,7 +131,8 @@ contract FlightSuretyApp {
         uint8 statusCode
     )
         internal
-        pure
+        view
+        requireIsOperational
     {
     }
 

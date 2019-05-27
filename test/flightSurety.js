@@ -27,6 +27,9 @@ contract('FlightSurety Tests', async (accounts) => {
 
     let status = await config.flightSuretyData.isOperational.call();
     assert.equal(status, false, "Incorrect operating status value after set");
+
+    // Change it back to true so the rest of the tests work
+    await config.flightSuretyData.setOperatingStatus(true);
   });
 
   it(`Has ability to block access to setOperatingStatus() for non-Owner`, async function () {
