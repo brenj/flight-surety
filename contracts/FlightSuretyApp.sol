@@ -31,8 +31,7 @@ contract FlightSuretyApp {
     }
 
     /** @dev Require contract to be operational. Used to pause a contract. */
-    modifier requireIsOperational()
-    {
+    modifier requireIsOperational() {
         // Modify to call data contract's status
         require(
             dataContract.isOperational(),
@@ -41,15 +40,22 @@ contract FlightSuretyApp {
     }
 
     /** @dev Require the owner account to be the function caller. */
-    modifier requireContractOwner()
-    {
+    modifier requireContractOwner() {
         require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
+
+    modifier requireAirlineSubmittedFunding() {
+        require(
+            dataContract.fundingHasBeenSubmitted(msg.sender),
+            "Requires funding has been submitted by registering airline");
         _;
     }
 
     /** @dev Add an airline to the registration queue. */
     function registerAirline(address airline)
         public
+        requireAirlineSubmittedFunding
     {
         require(
             dataContract.hasAirlineBeenAdded(airline),
