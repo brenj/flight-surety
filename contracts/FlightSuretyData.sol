@@ -39,7 +39,6 @@ contract FlightSuretyData {
 
     event AddedAirline(address airlineID);
     event Debug(uint test);
-    event DebugPolicies(uint test);
 
     constructor() public {
         contractOwner = msg.sender;
@@ -276,12 +275,25 @@ contract FlightSuretyData {
     function getCredits(
         address insuree
     )
-        external
+        public
         requireAuthorizedCaller
         requireIsOperational
         returns (uint256)
     {
         return credits[insuree];
+    }
+
+    function withdrawCredits(
+        address payee
+    )
+        external
+        payable
+        requireIsOperational
+    {
+        uint256 creditsAvailable = getCredits(payee);
+        require(creditsAvailable > 0, "Requires credits are available");
+        credits[payee] = 0;
+        payee.transfer(creditsAvailable);
     }
 
     function getFlightKey(

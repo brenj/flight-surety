@@ -166,6 +166,14 @@ contract FlightSuretyApp {
             airlineID, flight, msg.sender, msg.value);
     }
 
+    function withdrawCredits(
+    )
+        external
+        requireIsOperational
+    {
+        dataContract.withdrawCredits(msg.sender);
+    }
+
 // ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
