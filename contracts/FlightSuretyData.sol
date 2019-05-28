@@ -18,20 +18,28 @@ contract FlightSuretyData {
     }
 
     struct Flight {
+        string flight;
         bool isRegistered;
         uint8 statusCode;
         uint256 updatedTimestamp;
         address airlineID;
-        string flight;
+    }
+
+    struct Insurance {
+        address insuree;
+        uint256 amountInsuredFor;
     }
 
     mapping(address => bool) private authorizedCallers;
     mapping(address => Airline) private airlines;
     mapping(bytes32 => bool) private airlineRegistrationVotes;
     mapping(bytes32 => Flight) private flights;
+    mapping(bytes32 => Insurance[]) private policies;
+    mapping(address => uint256) private credits;
 
     event AddedAirline(address airlineID);
-    event Debug(address test);
+    event Debug(uint test);
+    event DebugPolicies(uint test);
 
     constructor() public {
         contractOwner = msg.sender;
@@ -40,7 +48,7 @@ contract FlightSuretyData {
 
     /** @dev Fallback function for funding smart contract. */
     function() external payable {
-        fund();
+        // fund();
     }
 
     /** @dev Require the owner account to be the function caller. */
@@ -217,27 +225,63 @@ contract FlightSuretyData {
     {
         flights[getFlightKey(airlineID, flight, timestamp)] = Flight({
             isRegistered: true,
-            statusCode: 0,
+            statusCode: 0, // STATUS_CODE_LATE_AIRLINE
             updatedTimestamp: timestamp,
             airlineID: airlineID,
             flight: flight
         });
     }
 
-    /** @dev Buy insurance for a flight. */
-    function buy() external payable {
+    function addToInsurancePolicy(
+        address airlineID,
+        string flight,
+        address _insuree,
+        uint256 amountToInsureFor
+    )
+        external
+        requireAuthorizedCaller
+        requireIsOperational
+    {
+        policies[keccak256(abi.encodePacked(airlineID, flight))].push(
+            Insurance({
+                insuree: _insuree,
+                amountInsuredFor: amountToInsureFor
+            })
+        );
     }
 
-    /** @dev Credits payouts to insurees. */
-    function creditInsurees() external pure {
+    function creditInsurees(
+        address airlineID,
+        string flight,
+        uint256 creditMultiplier
+    )
+        external
+        requireAuthorizedCaller
+        requireIsOperational
+    {
+        Insurance[] memory policiesToCredit = policies[
+            keccak256(abi.encodePacked(airlineID, flight))];
+
+        uint256 currentCredits;
+        for (uint i = 0; i < policiesToCredit.length; i++) {
+            currentCredits = credits[policiesToCredit[i].insuree];
+            // Calculate payout with multiplier and add to existing credits
+            credits[policiesToCredit[i].insuree] = SafeMath.add(
+                currentCredits,
+                policiesToCredit[i].amountInsuredFor.mul(
+                    creditMultiplier).div(10));
+        }
     }
 
-    /** @dev Transfers eligible payout funds to insuree. */
-    function pay() external pure {
-    }
-
-    /** @dev Initial funding for the insurance. */
-    function fund() public payable {
+    function getCredits(
+        address insuree
+    )
+        external
+        requireAuthorizedCaller
+        requireIsOperational
+        returns (uint256)
+    {
+        return credits[insuree];
     }
 
     function getFlightKey(

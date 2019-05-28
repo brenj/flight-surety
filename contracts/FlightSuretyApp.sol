@@ -13,6 +13,7 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+    uint256 private constant CREDIT_MULTIPLIER = 15;
 
     // Account used to deploy contract
     address private contractOwner;
@@ -137,14 +138,32 @@ contract FlightSuretyApp {
    /** @dev Called after oracle has updated flight status. */
     function processFlightStatus(
         address airlineID,
-        string memory flight,
+        string flight,
         uint256 timestamp,
         uint8 statusCode
     )
         internal
-        view
         requireIsOperational
     {
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            dataContract.creditInsurees(airlineID, flight, CREDIT_MULTIPLIER);
+        }
+    }
+
+    function buyInsurance(
+        address airlineID,
+        string flight
+    )
+        external
+        payable
+        requireIsOperational
+    {
+        require(
+            msg.value <= 1 ether,
+            "Requires insured amount of less and 1 ether");
+        address(dataContract).transfer(msg.value);
+        dataContract.addToInsurancePolicy(
+            airlineID, flight, msg.sender, msg.value);
     }
 
 // ORACLE MANAGEMENT
