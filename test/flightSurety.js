@@ -215,4 +215,16 @@ contract('FlightSurety Tests', async (accounts) => {
         'Requires funding wasn\'t already provided'),
         -1, 'Revert error not thrown for resubmitting funding');
   });
+
+  it(`Can register and retrieve a flight`, async function () {
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    await config.flightSuretyApp.registerFlight(
+      firstAirline, 'ABC-DEF-HIJ', timestamp);
+
+    let tx = await config.flightSuretyApp.fetchFlightStatus(
+      firstAirline, 'ABC-DEF-HIJ', timestamp);
+    let event = tx.logs[0].event;
+    assert.equal(event, 'OracleRequest', 'Invalid event emitted');
+  });
 });
