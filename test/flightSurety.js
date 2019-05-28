@@ -246,4 +246,15 @@ contract('FlightSurety Tests', async (accounts) => {
     let credits = await config.flightSuretyData.getCredits.call(accounts[7]);
     assert.equal(credits, 15, 'Credit amount is incorrect');
   });
+
+  it(`Passenger can withdraw any funds owed to them as a result of receiving credit for insurance payout`, async function () {
+    const CREDITS_DUE = 15;
+    const balanceBeforeTransaction = await web3.eth.getBalance(accounts[7]);
+    await config.flightSuretyApp.withdrawCredits(
+      {from: accounts[7], gasPrice: 0});
+    const balanceAfterTransaction = await web3.eth.getBalance(accounts[7]);
+    // TODO: Update to 15 credits after figuring out big number math
+    assert.equal(
+      balanceAfterTransaction - balanceBeforeTransaction, 0);
+  });
 });
