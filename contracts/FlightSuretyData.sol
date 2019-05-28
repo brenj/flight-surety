@@ -21,7 +21,8 @@ contract FlightSuretyData {
         bool isRegistered;
         uint8 statusCode;
         uint256 updatedTimestamp;
-        address airline;
+        address airlineID;
+        string flight;
     }
 
     mapping(address => bool) private authorizedCallers;
@@ -205,6 +206,24 @@ contract FlightSuretyData {
         return airlines[airlineID].fundingSubmitted == true;
     }
 
+    function addToRegisteredFlights(
+        address airlineID,
+        string flight,
+        uint256 timestamp
+    )
+        external
+        requireAuthorizedCaller
+        requireIsOperational
+    {
+        flights[getFlightKey(airlineID, flight, timestamp)] = Flight({
+            isRegistered: true,
+            statusCode: 0,
+            updatedTimestamp: timestamp,
+            airlineID: airlineID,
+            flight: flight
+        });
+    }
+
     /** @dev Buy insurance for a flight. */
     function buy() external payable {
     }
@@ -222,7 +241,7 @@ contract FlightSuretyData {
     }
 
     function getFlightKey(
-        address airline,
+        address airlineID,
         string memory flight,
         uint256 timestamp
     )
@@ -232,6 +251,6 @@ contract FlightSuretyData {
         requireIsOperational
         returns (bytes32)
     {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
+        return keccak256(abi.encodePacked(airlineID, flight, timestamp));
     }
 }

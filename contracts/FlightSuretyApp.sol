@@ -48,6 +48,10 @@ contract FlightSuretyApp {
         _;
     }
 
+    function isOperational() public returns (bool) {
+        return dataContract.isOperational();
+    }
+
     /** @dev Add an airline to the registration queue. */
     function registerAirline(address airline)
         public
@@ -98,8 +102,19 @@ contract FlightSuretyApp {
         dataContract.setFundingSubmitted(msg.sender);
     }
 
+    function registerFlight(
+        address airlineID,
+        string flight,
+        uint256 timestamp
+    )
+        external
+        requireIsOperational
+    {
+        dataContract.addToRegisteredFlights(airlineID, flight, timestamp);
+    }
+
     function fetchFlightStatus(
-        address airline,
+        address airlineID,
         string flight,
         uint256 timestamp
     )
@@ -110,22 +125,18 @@ contract FlightSuretyApp {
 
         // Generate a unique key for storing the request
         bytes32 key = keccak256(
-            abi.encodePacked(index, airline, flight, timestamp));
+            abi.encodePacked(index, airlineID, flight, timestamp));
         oracleResponses[key] = ResponseInfo({
             requester: msg.sender,
             isOpen: true
         });
 
-        emit OracleRequest(index, airline, flight, timestamp);
-    }
-
-    /** @dev Register a future flight for insuring. */
-    function registerFlight() external pure {
+        emit OracleRequest(index, airlineID, flight, timestamp);
     }
 
    /** @dev Called after oracle has updated flight status. */
     function processFlightStatus(
-        address airline,
+        address airlineID,
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
