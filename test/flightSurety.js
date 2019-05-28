@@ -227,4 +227,23 @@ contract('FlightSurety Tests', async (accounts) => {
     let event = tx.logs[0].event;
     assert.equal(event, 'OracleRequest', 'Invalid event emitted');
   });
+
+  it(`Passengers may pay up to 1 ether for purchasing flight insurance`, async function () {
+    // TODO: Update to 1 ether before submitting project
+    const amountToInsure = 10;
+    const CREDIT_MULTIPLIER = 15;
+
+    const balanceBeforeTransaction = await web3.eth.getBalance(accounts[7]);
+    await config.flightSuretyApp.buyInsurance(
+      firstAirline, 'ABC-DEF-HIJ',
+      {from: accounts[7], value: amountToInsure, gasPrice: 0});
+    const balanceAfterTransaction = await web3.eth.getBalance(accounts[7]);
+    assert.equal(balanceBeforeTransaction - balanceAfterTransaction, 0);
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    await config.flightSuretyData.creditInsurees(
+      firstAirline, 'ABC-DEF-HIJ', CREDIT_MULTIPLIER);
+    let credits = await config.flightSuretyData.getCredits.call(accounts[7]);
+    assert.equal(credits, 15, 'Credit amount is incorrect');
+  });
 });
