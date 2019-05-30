@@ -26,6 +26,20 @@ import './flightsurety.css';
             });
         })
     
+        DOM.elid('buy-insurance').addEventListener('click', () => {
+            let flightSelection = document.getElementById("flight-number");
+            let flight = flightSelection.options[flightSelection.selectedIndex].value;
+            let insuranceValue = DOM.elid('insurance-value').value;
+            contract.buyInsurance(flight, insuranceValue, (error, result) => {
+                display('Passenger', 'Buy insurance', [ { label: 'Transaction', error: error, value: result} ]);
+            });
+        })
+
+        DOM.elid('withdraw-credits').addEventListener('click', () => {
+            contract.withdrawCredits((error, result) => {
+                display('Passenger', 'Withdraw credits', [ { label: 'Transaction', error: error, value: result} ]);
+            });
+        })
     });
     
 

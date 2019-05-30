@@ -24,8 +24,22 @@
         <div id="display-wrapper" class="top-20">
         </div>
         <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <label class="form">Flights</label>
+            <select id="flight-number">
+                <option value="ABC-DEF-GHI" selected="selected">ABC-DEF-GHI</option>
+                <option value="JKL-MNO-PQR">JKL-MNO-PQR</option>
+                <option value="STU-VWX-YZZ">STU-VWX-YZZ</option>
+            </select>
+            &nbsp;
+            <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            &nbsp;
+            <input type="text" id="insurance-value" style="margin:0; width:100px" value="0.5">
+            &nbsp;
+            <btn class="btn btn-primary" id="buy-insurance">Buy Insurance</btn>
+            &nbsp;
+            <btn class="btn btn-primary" id="withdraw-credits">Withdraw Credits</btn>
         </div>
+
     </main>
 
 </body>
