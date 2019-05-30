@@ -1,14 +1,14 @@
 {
-  "name": "flightsurety",
+  "name": "FlightSurety",
   "version": "1.0.0",
-  "description": "",
+  "description": "An Ethereum dapp that offers flight insurance to airline passengers.",
   "directories": {
     "test": "test"
   },
-  "repository": "https://github.com/techbubble/flightsurety",
+  "repository": "https://github.com/brenj/flight-surety",
   "license": "MIT",
   "scripts": {
-    "test": "truffle test ./test/flightSurety.js",
+    "test": "truffle test",
     "dapp": "webpack-dev-server --mode development --config webpack.config.dapp.js",
     "dapp:prod": "webpack --mode production  --config webpack.config.dapp.js",
     "server": "rm -rf ./build/server && webpack --config webpack.config.server.js"
