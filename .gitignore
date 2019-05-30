@@ -1,4 +1,5 @@
 build
 node_modules
+prod
 src/dapp/config.json
 src/server/config.json
