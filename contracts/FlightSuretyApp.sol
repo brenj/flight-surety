@@ -20,7 +20,6 @@ contract FlightSuretyApp {
     FlightSuretyData dataContract;
 
     event RegisteredAirline(address airlineID);
-    event Debug(uint airline);
 
     constructor(address _dataContract) public {
         contractOwner = msg.sender;

@@ -39,14 +39,6 @@ contract FlightSuretyData {
 
     event AddedAirline(address airlineID);
 
-    event DebugCreditsAvailableBefore(uint256 test);
-    event DebugCreditAvailableAfter(uint256 test1);
-    event DebugAmountInsured(uint256 test2);
-    event DebugAmountInsuredStored(uint256 test3);
-    event DebugToWithdraw(uint256 test4);
-    event DebugCreditsPayout(uint256 test5);
-    event DebugPoliciesLength(uint256 test6);
-
     constructor() public {
         contractOwner = msg.sender;
         authorizedCallers[msg.sender] = true;
@@ -253,7 +245,6 @@ contract FlightSuretyData {
                 amountInsuredFor: amountToInsureFor
             })
         );
-        emit DebugAmountInsuredStored(policies[keccak256(abi.encodePacked(airlineID, flight))][0].amountInsuredFor);
     }
 
     function creditInsurees(
@@ -268,20 +259,14 @@ contract FlightSuretyData {
         bytes32 policyKey = keccak256(abi.encodePacked(airlineID, flight));
         Insurance[] memory policiesToCredit = policies[policyKey];
 
-        emit DebugPoliciesLength(policiesToCredit.length);
-
         uint256 currentCredits;
-        emit DebugPoliciesLength(policiesToCredit.length);
         for (uint i = 0; i < policiesToCredit.length; i++) {
             currentCredits = credits[policiesToCredit[i].insuree];
-            emit DebugCreditsAvailableBefore(currentCredits);
             // Calculate payout with multiplier and add to existing credits
             uint256 creditsPayout = (
                 policiesToCredit[i].amountInsuredFor.mul(creditMultiplier).div(10));
-            emit DebugCreditsPayout(creditsPayout);
             credits[policiesToCredit[i].insuree] = currentCredits.add(
                 creditsPayout);
-            emit DebugCreditAvailableAfter(credits[policiesToCredit[i].insuree]);
         }
 
         delete policies[policyKey];
@@ -295,7 +280,6 @@ contract FlightSuretyData {
         requireIsOperational
     {
         uint256 creditsAvailable = credits[insuree];
-        emit DebugToWithdraw(creditsAvailable);
         require(creditsAvailable > 0, "Requires credits are available");
         credits[insuree] = 0;
         insuree.transfer(creditsAvailable);
