@@ -265,11 +265,12 @@ contract FlightSuretyData {
         requireAuthorizedCaller
         requireIsOperational
     {
-        Insurance[] memory policiesToCredit = policies[
-            keccak256(abi.encodePacked(airlineID, flight))];
+        bytes32 policyKey = keccak256(abi.encodePacked(airlineID, flight));
+        Insurance[] memory policiesToCredit = policies[policyKey];
+
         emit DebugPoliciesLength(policiesToCredit.length);
 
-        uint256 currentCredits = 0;
+        uint256 currentCredits;
         emit DebugPoliciesLength(policiesToCredit.length);
         for (uint i = 0; i < policiesToCredit.length; i++) {
             currentCredits = credits[policiesToCredit[i].insuree];
@@ -282,6 +283,8 @@ contract FlightSuretyData {
                 creditsPayout);
             emit DebugCreditAvailableAfter(credits[policiesToCredit[i].insuree]);
         }
+
+        delete policies[policyKey];
     }
 
     function withdrawCreditsForInsuree(
