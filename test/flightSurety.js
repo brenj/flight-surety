@@ -1,5 +1,6 @@
 const Test = require('../config/testConfig.js');
 const BigNumber = require('bignumber.js');
+const Web3 = require('web3');
 
 contract('FlightSurety Tests', async (accounts) => {
 
@@ -54,7 +55,7 @@ contract('FlightSurety Tests', async (accounts) => {
       await config.flightSuretyData.hasFundingBeenSubmitted.call(
         firstAirline));
     assert.equal(
-      wasFunded, false, "First airline should not have been funded on deploy");
+      wasFunded, true, "First airline should be funded on deploy");
   });
 
   it(`Only existing airline may register a new airline until there are at least four airlines registered`, async function () {
@@ -65,7 +66,8 @@ contract('FlightSurety Tests', async (accounts) => {
     await config.flightSuretyData.addAirline(
       accounts[2], "Test Airlines #1");
     await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: accounts[2], value: 10, gasPrice: 0});
+      {from: accounts[2],
+       value: Web3.utils.toWei('10', "ether"), gasPrice: 0});
     // Attempt to add and register airline from Test Airlines #1
     await config.flightSuretyData.addAirline(
       airlineToRegister, "Test Airlines #2");
@@ -84,8 +86,6 @@ contract('FlightSurety Tests', async (accounts) => {
         'Requires first airline to register first 4 airlines'),
         -1, 'Revert error not thrown for registering without firstAirline');
 
-    await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: firstAirline, value: 10, gasPrice: 0});
     await config.flightSuretyApp.registerAirline(
       airlineToRegister, {from: firstAirline});
     let wasRegistered = (
@@ -116,7 +116,8 @@ contract('FlightSurety Tests', async (accounts) => {
       accounts[5], "Test Airlines #4");
 
     await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: unregisteredAirline, value: 10, gasPrice: 0});
+      {from: unregisteredAirline,
+       value: Web3.utils.toWei('10', "ether"), gasPrice: 0});
     let errorThrown;
     try {
       await config.flightSuretyApp.registerAirline(
@@ -152,11 +153,13 @@ contract('FlightSurety Tests', async (accounts) => {
         -1, 'Revert error not thrown for registering airline hasn\'t already voted');
 
     await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: accounts[2], value: 10, gasPrice: 0});
+      {from: accounts[2],
+       value: Web3.utils.toWei('10', "ether"), gasPrice: 0});
     await config.flightSuretyApp.registerAirline(
       accounts[5], {from: accounts[2]});
     await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: accounts[3], value: 10, gasPrice: 0});
+      {from: accounts[3],
+       value: Web3.utils.toWei('10', "ether"), gasPrice: 0});
     await config.flightSuretyApp.registerAirline(
       accounts[5], {from: accounts[3]});
 
@@ -186,9 +189,9 @@ contract('FlightSurety Tests', async (accounts) => {
 
     const balanceBeforeTransaction = await web3.eth.getBalance(firstAirline);
     await config.flightSuretyApp.submitAirlineRegistrationFund(
-      {from: accounts[6], value: 10, gasPrice: 0});
+      {from: accounts[6],
+       value: Web3.utils.toWei('10', "ether"), gasPrice: 0});
     const balanceAfterTransaction = await web3.eth.getBalance(firstAirline);
-    // TODO: Update to 10 ether before submitting project
     assert.equal(
       balanceBeforeTransaction - balanceAfterTransaction, 0,
       "Balance before should be 10 ether greater than balance after"
@@ -203,7 +206,8 @@ contract('FlightSurety Tests', async (accounts) => {
     errorThrown = undefined;
     try {
       await config.flightSuretyApp.submitAirlineRegistrationFund(
-        {from: accounts[6], value: 10, gasPrice: 0});
+        {from: accounts[6],
+         value: Web3.utils.toWei('10', "ether"), gasPrice: 0});
     } catch (error) {
       errorThrown = error;
     }
@@ -220,41 +224,38 @@ contract('FlightSurety Tests', async (accounts) => {
     const timestamp = Math.floor(Date.now() / 1000);
 
     await config.flightSuretyApp.registerFlight(
-      firstAirline, 'ABC-DEF-HIJ', timestamp);
+      firstAirline, 'ABC-DEF-GHI', timestamp);
 
     let tx = await config.flightSuretyApp.fetchFlightStatus(
-      firstAirline, 'ABC-DEF-HIJ', timestamp);
+      firstAirline, 'ABC-DEF-GHI', timestamp);
     let event = tx.logs[0].event;
     assert.equal(event, 'OracleRequest', 'Invalid event emitted');
   });
 
   it(`Passengers may pay up to 1 ether for purchasing flight insurance`, async function () {
-    // TODO: Update to 1 ether before submitting project
-    const amountToInsure = 10;
+    const amountToInsure = Web3.utils.toWei('1', "ether");
     const CREDIT_MULTIPLIER = 15;
 
     const balanceBeforeTransaction = await web3.eth.getBalance(accounts[7]);
     await config.flightSuretyApp.buyInsurance(
-      firstAirline, 'ABC-DEF-HIJ',
+      firstAirline, 'ABC-DEF-GHI',
       {from: accounts[7], value: amountToInsure, gasPrice: 0});
     const balanceAfterTransaction = await web3.eth.getBalance(accounts[7]);
-    assert.equal(balanceBeforeTransaction - balanceAfterTransaction, 0);
+    assert.equal(balanceBeforeTransaction - balanceAfterTransaction, Web3.utils.toWei('1', "ether"));
 
     const timestamp = Math.floor(Date.now() / 1000);
     await config.flightSuretyData.creditInsurees(
-      firstAirline, 'ABC-DEF-HIJ', CREDIT_MULTIPLIER);
-    let credits = await config.flightSuretyData.getCredits.call(accounts[7]);
-    assert.equal(credits, 15, 'Credit amount is incorrect');
+      firstAirline, 'ABC-DEF-GHI', CREDIT_MULTIPLIER);
   });
 
   it(`Passenger can withdraw any funds owed to them as a result of receiving credit for insurance payout`, async function () {
-    const CREDITS_DUE = 15;
+    const CREDITS_DUE = Web3.utils.toWei('1.5', "ether");
     const balanceBeforeTransaction = await web3.eth.getBalance(accounts[7]);
     await config.flightSuretyApp.withdrawCredits(
       {from: accounts[7], gasPrice: 0});
+
     const balanceAfterTransaction = await web3.eth.getBalance(accounts[7]);
-    // TODO: Update to 15 credits after figuring out big number math
     assert.equal(
-      balanceAfterTransaction - balanceBeforeTransaction, 0);
+      balanceAfterTransaction - balanceBeforeTransaction, CREDITS_DUE);
   });
 });
