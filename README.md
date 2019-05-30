@@ -31,6 +31,7 @@ Install, Test, & Run
 
 Screenshot
 ----------
+![FlightSurety Homepage](screenshots/homepage.png?raw=true)
 
 Code Organization
 -----------------
