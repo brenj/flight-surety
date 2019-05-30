@@ -27,6 +27,9 @@ contract FlightSuretyApp {
         dataContract = FlightSuretyData(_dataContract);
     }
 
+    function() external payable {
+    }
+
     /** @dev Require contract to be operational. Used to pause a contract. */
     modifier requireIsOperational() {
         // Modify to call data contract's status
