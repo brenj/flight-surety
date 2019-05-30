@@ -38,7 +38,14 @@ contract FlightSuretyData {
     mapping(address => uint256) private credits;
 
     event AddedAirline(address airlineID);
-    event Debug(uint test);
+
+    event DebugCreditsAvailableBefore(uint256 test);
+    event DebugCreditAvailableAfter(uint256 test1);
+    event DebugAmountInsured(uint256 test2);
+    event DebugAmountInsuredStored(uint256 test3);
+    event DebugToWithdraw(uint256 test4);
+    event DebugCreditsPayout(uint256 test5);
+    event DebugPoliciesLength(uint256 test6);
 
     constructor() public {
         contractOwner = msg.sender;
@@ -247,6 +254,7 @@ contract FlightSuretyData {
                 amountInsuredFor: amountToInsureFor
             })
         );
+        emit DebugAmountInsuredStored(policies[keccak256(abi.encodePacked(airlineID, flight))][0].amountInsuredFor);
     }
 
     function creditInsurees(
@@ -260,40 +268,35 @@ contract FlightSuretyData {
     {
         Insurance[] memory policiesToCredit = policies[
             keccak256(abi.encodePacked(airlineID, flight))];
+        emit DebugPoliciesLength(policiesToCredit.length);
 
-        uint256 currentCredits;
+        uint256 currentCredits = 0;
+        emit DebugPoliciesLength(policiesToCredit.length);
         for (uint i = 0; i < policiesToCredit.length; i++) {
             currentCredits = credits[policiesToCredit[i].insuree];
+            emit DebugCreditsAvailableBefore(currentCredits);
             // Calculate payout with multiplier and add to existing credits
-            credits[policiesToCredit[i].insuree] = SafeMath.add(
-                currentCredits,
-                policiesToCredit[i].amountInsuredFor.mul(
-                    creditMultiplier).div(10));
+            uint256 creditsPayout = (
+                policiesToCredit[i].amountInsuredFor.mul(creditMultiplier).div(10));
+            emit DebugCreditsPayout(creditsPayout);
+            credits[policiesToCredit[i].insuree] = currentCredits.add(
+                creditsPayout);
+            emit DebugCreditAvailableAfter(credits[policiesToCredit[i].insuree]);
         }
     }
 
-    function getCredits(
+    function withdrawCreditsForInsuree(
         address insuree
     )
-        public
+        external
         requireAuthorizedCaller
         requireIsOperational
-        returns (uint256)
     {
-        return credits[insuree];
-    }
-
-    function withdrawCredits(
-        address payee
-    )
-        external
-        payable
-        requireIsOperational
-    {
-        uint256 creditsAvailable = getCredits(payee);
+        uint256 creditsAvailable = credits[insuree];
+        emit DebugToWithdraw(creditsAvailable);
         require(creditsAvailable > 0, "Requires credits are available");
-        credits[payee] = 0;
-        payee.transfer(creditsAvailable);
+        credits[insuree] = 0;
+        insuree.transfer(creditsAvailable);
     }
 
     function getFlightKey(

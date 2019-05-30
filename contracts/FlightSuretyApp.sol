@@ -98,7 +98,7 @@ contract FlightSuretyApp {
             !dataContract.hasFundingBeenSubmitted(msg.sender),
             "Requires funding wasn't already provided");
         require(
-            msg.value == 10 wei, "Requires registration funds be 10 ether");
+            msg.value == 10 ether, "Requires registration funds be 10 ether");
         address(dataContract).transfer(msg.value);
         dataContract.setFundingSubmitted(msg.sender);
     }
@@ -160,10 +160,10 @@ contract FlightSuretyApp {
     {
         require(
             msg.value <= 1 ether,
-            "Requires insured amount of less and 1 ether");
-        address(dataContract).transfer(msg.value);
+            "Requires insured amount of less than 1 ether");
         dataContract.addToInsurancePolicy(
             airlineID, flight, msg.sender, msg.value);
+        address(dataContract).transfer(msg.value);
     }
 
     function withdrawCredits(
@@ -171,7 +171,7 @@ contract FlightSuretyApp {
         external
         requireIsOperational
     {
-        dataContract.withdrawCredits(msg.sender);
+        dataContract.withdrawCreditsForInsuree(msg.sender);
     }
 
 // ORACLE MANAGEMENT
