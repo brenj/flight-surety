@@ -1,6 +1,7 @@
 const FlightSuretyApp = artifacts.require("FlightSuretyApp");
 const FlightSuretyData = artifacts.require("FlightSuretyData");
 const fs = require('fs');
+const Web3 = require('web3');
 
 module.exports = async(deployer, network, accounts) => {
   let firstAirline = accounts[1];
@@ -13,8 +14,19 @@ module.exports = async(deployer, network, accounts) => {
   await dataContract.addToRegisteredAirlines(firstAirline);
 
   // Deploy the app logic contract and authorize it with the data contract
-  await deployer.deploy(FlightSuretyApp, FlightSuretyData.address);
+  let appContract = await deployer.deploy(
+    FlightSuretyApp, FlightSuretyData.address);
   await dataContract.authorizeCaller(FlightSuretyApp.address);
+
+  // Fund the contract using the first airline
+  await appContract.submitAirlineRegistrationFund(
+    {from: firstAirline, value: Web3.utils.toWei('10', "ether")});
+
+  // Add some dummy data for demo purposes
+  const timestamp = Math.floor(Date.now() / 1000);
+  await appContract.registerFlight(firstAirline, 'ABC-DEF-GHI', timestamp);
+  await appContract.registerFlight(firstAirline, 'JKL-MNO-PQR', timestamp);
+  await appContract.registerFlight(firstAirline, 'STU-VWX-YZZ', timestamp);
 
   let config = {
     localhost: {
