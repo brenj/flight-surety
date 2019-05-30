@@ -25,9 +25,10 @@ Requirements
 Install, Test, & Run
 --------------------
 1. `npm install`
-2. `truffle test`
+2. `npm test`
 3. `npm run server`
 4. `npm run web`
+5. Navigate to http://localhost:8000/
 
 Screenshot
 ----------
