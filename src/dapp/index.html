@@ -12,34 +12,47 @@
 <body>
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="#">FlightSurety</a>
+        <a class="navbar-brand" href="#" style="color: #E6822E;">FlightSurety</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
             aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <span style="color: #ABADA7;">Buy flight insurance and collect payouts, with ease</>
     </nav>
 
     <main class="container">
-
+      <h1>Selected: "First Airlines"</h1>
         <div id="display-wrapper" class="top-20">
         </div>
         <div class="row top-20">
-            <label class="form">Flights</label>
+            <label class="form">Select a flight:</label>
             <select id="flight-number">
                 <option value="ABC-DEF-GHI" selected="selected">ABC-DEF-GHI</option>
                 <option value="JKL-MNO-PQR">JKL-MNO-PQR</option>
                 <option value="STU-VWX-YZZ">STU-VWX-YZZ</option>
             </select>
+        </div>
+        <hr />
+        <hr />
+        <div class="row top-20">
+            <label class="form">Fetch flight status from oracles:</label>
+            <btn class="btn btn-primary" id="submit-oracle">Query Oracles</btn>
+        </div>
+        <div class="row top-20">
+            <label class="form">Buy insurance for selected flight:</label>
+            <input type="text" id="insurance-value" style="margin:0; width:100px" value="0.5">&nbsp;&nbsp;ETH
             &nbsp;
-            <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
-            &nbsp;
-            <input type="text" id="insurance-value" style="margin:0; width:100px" value="0.5">
             &nbsp;
             <btn class="btn btn-primary" id="buy-insurance">Buy Insurance</btn>
-            &nbsp;
+        </div>
+        <div class="row top-20">
+            <label class="form">Withdraw credits for all payouts:</label>
             <btn class="btn btn-primary" id="withdraw-credits">Withdraw Credits</btn>
         </div>
-
+        <div id="results-wrapper" class="top-20">
+        </div>
+        <div class="row top-20">
+        </div>
     </main>
 
 </body>
