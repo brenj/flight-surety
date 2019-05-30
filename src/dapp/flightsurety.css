@@ -5,9 +5,9 @@ body {
 }
 
 .container {
-    margin-top: 250px;
+    margin-top: 150px;
     background-color: #000;
-    opacity: 0.9;
+    opacity: 0.80;
     color: #fff;
     padding: 40px;
 }
