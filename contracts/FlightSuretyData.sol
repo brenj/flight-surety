@@ -117,6 +117,7 @@ contract FlightSuretyData {
         address airlineID
     )
         external
+        view
         requireAuthorizedCaller
         requireIsOperational
         returns (bool)
@@ -141,6 +142,7 @@ contract FlightSuretyData {
         address airlineID
     )
         external
+        view
         requireAuthorizedCaller
         requireIsOperational
         returns (bool)
@@ -152,6 +154,7 @@ contract FlightSuretyData {
     function getRegisteredAirlines(
     )
         external
+        view
         requireAuthorizedCaller
         requireIsOperational
         returns (address[] memory)
@@ -164,6 +167,7 @@ contract FlightSuretyData {
         address airlineVoteeID
     )
         external
+        view
         requireAuthorizedCaller
         requireIsOperational
         returns (bool)
@@ -204,6 +208,7 @@ contract FlightSuretyData {
         address airlineID
     )
         external
+        view
         requireAuthorizedCaller
         requireIsOperational
         returns (bool)

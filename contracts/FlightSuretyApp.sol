@@ -51,7 +51,7 @@ contract FlightSuretyApp {
         _;
     }
 
-    function isOperational() public returns (bool) {
+    function isOperational() public view returns (bool) {
         return dataContract.isOperational();
     }
 
@@ -141,7 +141,6 @@ contract FlightSuretyApp {
     function processFlightStatus(
         address airlineID,
         string flight,
-        uint256 timestamp,
         uint8 statusCode
     )
         internal
@@ -271,7 +270,7 @@ contract FlightSuretyApp {
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
             // Handle flight status as appropriate
-            processFlightStatus(airline, flight, timestamp, statusCode);
+            processFlightStatus(airline, flight, statusCode);
         }
     }
 
