@@ -3,7 +3,6 @@ import Config from './config.json';
 import Web3 from 'web3';
 import express from 'express';
 
-
 let config = Config['localhost'];
 let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
 web3.eth.defaultAccount = web3.eth.accounts[0];
@@ -11,15 +10,13 @@ let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddre
 
 let oracles = 20;
 let registeredOracles = [];
-// let STATUS_CODES = [0, 10, 20, 30, 40, 50];
-let STATUS_CODES = [20, 20, 20, 20, 20, 20];
+let STATUS_CODES = [0, 10, 20, 30, 40, 50];
 
 web3.eth.getAccounts((error, accounts) => {
   for(let i = 0; i < oracles; i++) {
     flightSuretyApp.methods.registerOracle()
     .send({from: accounts[i], value: web3.utils.toWei("1",'ether'), gas: 9999999}, (error, result) => {
       flightSuretyApp.methods.getMyIndexes().call({from: accounts[i]}, (error, result) => {
-        console.log(error);
         let oracle = {
           address: accounts[i],
           index: result
@@ -42,11 +39,8 @@ flightSuretyApp.events.OracleRequest({
       
       for(let i = 0; i < registeredOracles.length; i++) {
         if(registeredOracles[i].index.includes(index)) {
-          console.log(index, airline, flight, timestamp, statusCode);
           flightSuretyApp.methods.submitOracleResponse(index, airline, flight, timestamp, statusCode)
           .send({from: registeredOracles[i].address, gas: 9999999}, (error, result) => {
-            console.log(error);
-            console.log(result);
             console.log("FROM " + JSON.stringify(registeredOracles[i]) + "STATUS CODE: " + statusCode);
           });
         }
@@ -61,5 +55,3 @@ app.get('/api', (req, res) => {
 })
 
 export default app;
-
-
