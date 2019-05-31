@@ -65,7 +65,7 @@ Grading (by Udacity)
 
 Criteria                                                    |Highest Grade Possible  |Grade Recieved
 ------------------------------------------------------------|------------------------|--------------------
-Separation of Concerns, Operational Control and “Fail Fast” |Meets Specifications    |
-Airlines                                                    |Meets Specifications    |
-Passengers                                                  |Meets Specifications    |
-Oracles (Server App)                                        |Meets Specifications    |
+Separation of Concerns, Operational Control and “Fail Fast” |Meets Specifications    |Meets Specifications
+Airlines                                                    |Meets Specifications    |Meets Specifications
+Passengers                                                  |Meets Specifications    |Meets Specifications
+Oracles (Server App)                                        |Meets Specifications    |Meets Specifications
