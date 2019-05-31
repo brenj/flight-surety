@@ -274,18 +274,6 @@ contract FlightSuretyApp {
         }
     }
 
-    function getFlightKey(
-        address airline,
-        string flight,
-        uint256 timestamp
-    )
-        pure
-        internal
-        returns (bytes32)
-    {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
-
     // Returns array of three non-duplicating integers from 0-9
     function generateIndexes(address account) internal returns (uint8[3]) {
         uint8[3] memory indexes;
